@@ -19,6 +19,10 @@ def get_lower_tokens(request):
     return [x.lower() for x in request['request']['nlu']['tokens']]
 
 
+def get_ready_phrase():
+    return "Готово!"
+
+
 def handle_dialog(req, res):
     if req['session']['new']:
         res['response']['text'] = 'Привет! Я могу управлять подсветкой!'
@@ -63,41 +67,19 @@ def handle_dialog(req, res):
         requests.put(f'{MAIN_URL}/setModeAndSubmode?new_mode=2&new_submode=6')
         res['response']['text'] = 'Готово!'
 
-    # Изменение деталей [settings[0]]
-    elif get_lower_tokens(req) in [['сделай', 'цвет', 'теплее'],
-                                   ['увеличь', 'скорость']]:
-        requests.get(f'{MAIN_URL}/setSet0Higher')
-        res['response']['text'] = 'Готово!'
-    elif get_lower_tokens(req) in [['сделай', 'цвет', 'холоднее'],
-                                   ['уменьши', 'скорость']]:
-        requests.get(f'{MAIN_URL}/setSet0Lower')
-        res['response']['text'] = 'Готово!'
-    elif get_lower_tokens(req) in [['сделай', 'цвет', 'максимально', 'теплым'],
-                                   ['установи', 'минимальную', 'скорость']]:
-        requests.get(f'{MAIN_URL}/setSet0Max')
-        res['response']['text'] = 'Готово!'
-    elif get_lower_tokens(req) in [['сделай', 'цвет', 'максимально', 'холодным'],
-                                   ['установи', 'максимальную', 'скорость']]:
-        requests.get(f'{MAIN_URL}/setSet0Min')
-        res['response']['text'] = 'Готово!'
-
-    # Изменение деталей [settings[1]]
-    elif get_lower_tokens(req) in [['увеличь', 'яркость'],
-                                   ['увеличь', 'насыщенность']]:
-        requests.get(f'{MAIN_URL}/setSet1Higher')
-        res['response']['text'] = 'Готово!'
-    elif get_lower_tokens(req) in [['уменьши', 'яркость'],
-                                   ['уменьши', 'насыщенность']]:
-        requests.get(f'{MAIN_URL}/setSet1Lower')
-        res['response']['text'] = 'Готово!'
-    elif get_lower_tokens(req) in [['установи', 'максимальную', 'яркость'],
-                                   ['установи', 'максимальную', 'насыщенность']]:
-        requests.get(f'{MAIN_URL}/setSet1Max')
-        res['response']['text'] = 'Готово!'
-    elif get_lower_tokens(req) in [['установи', 'минимальную', 'яркость'],
-                                   ['установи', 'минимальную', 'насыщенность']]:
-        requests.get(f'{MAIN_URL}/setSet1Min')
-        res['response']['text'] = 'Готово!'
+    # Теплота
+    elif get_lower_tokens(req) in [['сделай', 'цвет', 'теплее']]:
+        response = requests.get(f'{MAIN_URL}/changeValue/increase/temperature')
+        res['response']['text'] = get_ready_phrase() if response.status_code == 200 else response.headers['detail']
+    elif get_lower_tokens(req) in [['сделай', 'цвет', 'холоднее']]:
+        response = requests.get(f'{MAIN_URL}/changeValue/decrease/temperature')
+        res['response']['text'] = get_ready_phrase() if response.status_code == 200 else response.headers['detail']
+    elif get_lower_tokens(req) in [['сделай', 'цвет', 'максимально', 'теплым']]:
+        response = requests.get(f'{MAIN_URL}/changeValue/setMax/temperature')
+        res['response']['text'] = get_ready_phrase() if response.status_code == 200 else response.headers['detail']
+    elif get_lower_tokens(req) in [['сделай', 'цвет', 'максимально', 'холодным']]:
+        response = requests.get(f'{MAIN_URL}/changeValue/setMin/temperature')
+        res['response']['text'] = get_ready_phrase() if response.status_code == 200 else response.headers['detail']
 
     else:
         res['response']['text'] = 'Я не знаю, что ответить'
